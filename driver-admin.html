@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تكتوكوبر - السائقين والإدارة</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { margin: 0; background: #f1f5f9; color: #0f172a; padding: 14px; padding-bottom: 50px; }
+    .wrap { max-width: 960px; margin: auto; }
+    .hero { background: linear-gradient(135deg, #f59e0b, #d97706); color: #111827; padding: 18px; border-radius: 14px; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .hero h1 { margin: 0; font-size: 22px; font-weight: 800; }
+    .hero p { margin: 4px 0 0; font-size: 13px; font-weight: 600; }
+    .nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+    .nav button { padding: 11px 8px; border: none; border-radius: 10px; background: white; font-weight: 700; font-size: 13px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.05); color: #334155; }
+    .nav button.active { background: #111827; color: #fbbf24; }
+    .card { background: white; border-radius: 14px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: none; }
+    .card.active { display: block; }
+    .card h2 { margin: 0 0 12px; font-size: 17px; color: #b45309; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+    .admin-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 12px; }
+    .admin-top h2 { margin: 0; border: none; padding: 0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+    label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 5px; color: #334155; }
+    input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 9px; font-size: 14px; background: #fff; }
+    .btn { border: none; border-radius: 9px; padding: 10px 14px; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block; text-align: center; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-amber { background: #f59e0b; color: #111827; }
+    .btn-dark { background: #0f172a; color: white; }
+    .btn-green { background: #16a34a; color: white; }
+    .btn-red { background: #dc2626; color: white; }
+    .btn-blue { background: #2563eb; color: white; }
+    .btn-gray { background: #64748b; color: white; }
+    .gps-box { background: #fffbeb; border: 1px dashed #f59e0b; padding: 10px; border-radius: 10px; margin-top: 10px; font-size: 13px; }
+    .manual-gps { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin-top: 8px; }
+    .preview-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .preview-box { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; text-align: center; background: #f8fafc; }
+    .preview-box img { max-width: 100%; max-height: 150px; border-radius: 8px; object-fit: cover; display: none; margin: 6px auto 0; }
+    .driver-item, .trip-box { border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 12px; background: #fff; }
+    .portal-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .driver-avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid #f59e0b; background: #f8fafc; }
+    .edit-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px; margin-top: 10px; display: none; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+    .b-pending { background: #fef3c7; color: #92400e; }
+    .b-active { background: #dcfce7; color: #166534; }
+    .b-blocked { background: #fee2e2; color: #991b1b; }
+    .plate { background: #fbbf24; color: #111827; padding: 3px 10px; border-radius: 6px; font-weight: 800; border: 2px solid #111827; font-size: 13px; display: inline-block; }
+    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+    .stat { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; text-align: center; }
+    .stat b { display: block; font-size: 16px; color: #0f172a; margin-top: 4px; }
+    .admin-subtabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .subtab-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .subtab-btn.active { background: #0f172a; color: #fbbf24; border-color: #0f172a; }
+    .toast { position: fixed; bottom: 16px; left: 16px; right: 16px; max-width: 440px; margin: auto; background: #0f172a; color: white; padding: 12px 16px; border-radius: 10px; text-align: center; font-size: 13px; font-weight: 700; display: none; z-index: 999; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <h1>تكتوكوبر — TokTokUber</h1>
+    <p>تسجيل السائقين بالبطاقة والصورة • رقم نمرة لكل توكتوك • متابعة الحساب والعمولة والأوردرات</p>
+  </div>
+
+  <div class="nav">
+    <button class="active" id="tabReg" onclick="openTab('reg')">تسجيل سائق جديد</button>
+    <button id="tabPortal" onclick="openTab('portal')">حساب السائق والعمولة</button>
+    <button id="tabAdmin" onclick="openTab('admin')">إدارة التطبيق</button>
+  </div>
+
+  <!-- 1. تسجيل سائق جديد -->
+  <div class="card active" id="cardReg">
+    <h2>طلب انضمام سائق جديد</h2>
+    <div class="grid">
+      <div>
+        <label>الاسم الكامل للسائق</label>
+        <input type="text" id="regName" placeholder="مثال: محمود حسن علي" />
+      </div>
+      <div>
+        <label>رقم الهاتف (واتساب)</label>
+        <input type="tel" id="regPhone" placeholder="01xxxxxxxxx" />
+      </div>
+      <div>
+        <label>كلمة سر خاصة بحساب السائق</label>
+        <input type="password" id="regPin" placeholder="اختر كلمة سر لدخول حسابك" />
+      </div>
+      <div>
+        <label>الرقم القومي / البطاقة</label>
+        <input type="text" id="regNationalId" placeholder="14 رقم" />
+      </div>
+      <div>
+        <label>نوع / لون التوكتوك</label>
+        <input type="text" id="regVehicle" placeholder="مثال: بجاج أحمر موديل 2023" />
+      </div>
+    </div>
+
+    <div class="gps-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span><b>الموقع (اختياري):</b> <span id="gpsStatus">غير محدد (يمكن المتابعة بدونه)</span></span>
+        <button type="button" class="btn btn-amber" onclick="captureGPS()">تحديد موقعي الآن</button>
+      </div>
+      <div class="manual-gps">
+        <input type="number" step="any" id="manualLat" placeholder="خط العرض (اختياري)" />
+        <input type="number" step="any" id="manualLng" placeholder="خط الطول (اختياري)" />
+        <button type="button" class="btn btn-gray" onclick="setManualGPS()">تثبيت</button>
+      </div>
+    </div>
+
+    <div class="preview-row">
+      <div class="preview-box">
+        <label>صورة السائق الشخصية</label>
+        <input type="file" id="photoInput" accept="image/*" />
+        <img id="photoPreview" alt="صورة السائق" />
+      </div>
+      <div class="preview-box">
+        <label>صورة البطاقة الشخصية</label>
+        <input type="file" id="idCardInput" accept="image/*" />
+        <img id="idCardPreview" alt="صورة البطاقة" />
+      </div>
+    </div>
+
+    <button type="button" id="btnSubmitReg" class="btn btn-dark" style="width:100%; margin-top:14px; padding:12px;" onclick="submitDriverReg()">إرسال طلب التسجيل للمراجعة</button>
+  </div>
+
+  <!-- 2. حساب السائق ومتابعة العمولة -->
+  <div class="card" id="cardPortal">
+    <div class="admin-top">
+      <h2>حساب السائق والعمولة المستحقة</h2>
+      <button type="button" class="btn btn-red" id="btnLogoutDriver" style="display:none;" onclick="logoutDriver()">خروج من الحساب</button>
+    </div>
+
+    <div id="driverLoginBox">
+      <div class="grid">
+        <div>
+          <label>رقم هاتف السائق</label>
+          <input type="tel" id="loginPhone" placeholder="01xxxxxxxxx" />
+        </div>
+        <div>
+          <label>كلمة سر حساب السائق</label>
+          <input type="password" id="loginPin" placeholder="أدخل كلمة سر السائق" />
+        </div>
+      </div>
+      <button type="button" class="btn btn-amber" style="width:100%; margin-top:12px;" onclick="loadDriverPortal()">دخول إلى حسابي</button>
+    </div>
+
+    <div id="portalResult"></div>
+  </div>
+
+  <!-- 3. لوحة الإدارة -->
+  <div class="card" id="cardAdmin">
+    <div class="admin-top">
+      <h2>لوحة تحكم الإدارة</h2>
+      <button type="button" class="btn btn-red" id="btnLogoutAdmin" style="display:none;" onclick="logoutAdmin()">خروج من الإدارة</button>
+    </div>
+
+    <div id="adminLockBox">
+      <label>كلمة مرور الإدارة</label>
+      <div style="display:flex; gap:8px;">
+        <input type="password" id="adminPassInput" placeholder="أدخل كلمة مرور الإدارة" />
+        <button type="button" class="btn btn-dark" onclick="unlockAdmin()">دخول</button>
+      </div>
+    </div>
+
+    <div id="adminPanelContent" style="display:none;">
+      <div class="admin-subtabs">
+        <button type="button" class="subtab-btn active" id="subDrivers" onclick="switchAdminSub('drivers')">السائقين والمديونيات</button>
+        <button type="button" class="subtab-btn" id="subTrips" onclick="switchAdminSub('trips')">جميع الأوردرات والرحلات (<span id="tripsCountBadge">0</span>)</button>
+        <button type="button" class="subtab-btn" id="subSettings" onclick="switchAdminSub('settings')">إعدادات النسبة والخصم والواتساب</button>
+      </div>
+
+      <div id="adminSecDrivers">
+        <h3 style="margin:0 0 10px; font-size:15px;">قائمة السائقين (<span id="driversCount">0</span>)</h3>
+        <div id="driversList">جاري التحميل...</div>
+      </div>
+
+      <div id="adminSecTrips" style="display:none;">
+        <div class="stat-grid">
+          <div class="stat"><small>إجمالي الأوردرات</small><b id="sumAllTrips">0</b></div>
+          <div class="stat"><small>إجمالي قيمة الرحلات</small><b id="sumAllFares">0 ج</b></div>
+          <div class="stat"><small>إجمالي عمولة التطبيق</small><b style="color:#16a34a;" id="sumAllComm">0 ج</b></div>
+        </div>
+        <div id="adminTripsList">جاري تحميل الأوردرات...</div>
+      </div>
+
+      <div id="adminSecSettings" style="display:none;">
+        <div class="grid" style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0;">
+          <div>
+            <label>نسبة عمولة التطبيق (%)</label>
+            <input type="number" id="cfgCommission" min="0" max="80" value="15" />
+          </div>
+          <div>
+            <label>نسبة الخصم للركاب (%)</label>
+            <input type="number" id="cfgDiscount" min="0" max="90" value="0" />
+          </div>
+          <div>
+            <label>رقم فودافون كاش / إنستا باي للتحويل</label>
+            <input type="text" id="cfgWallet" placeholder="01xxxxxxxxx" />
+          </div>
+          <div>
+            <label>رقم واتساب الإدارة لاستلام صور التحويل</label>
+            <input type="tel" id="cfgWhatsapp" placeholder="201xxxxxxxxx" />
+          </div>
+          <div>
+            <label>حد المديونية قبل الإيقاف التلقائي (جنيه)</label>
+            <input type="number" id="cfgMaxDebt" min="10" value="100" />
+          </div>
+          <div>
+            <label>تغيير كلمة مرور الإدارة (اختياري)</label>
+            <input type="password" id="cfgNewPass" placeholder="اكتب كلمة سر جديدة للحفظ" />
+          </div>
+          <div style="grid-column: 1 / -1;">
+            <button type="button" class="btn btn-green" style="width:100%;" onclick="saveAdminConfig()">حفظ الإعدادات</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const DB_URL = "https://toktokuber-app-default-rtdb.europe-west1.firebasedatabase.app";
+  const DEFAULT_PASS = "1234";
+
+  let currentGPS = null;
+  let driverPhotoBase64 = "";
+  let idCardBase64 = "";
+  let appConfig = { commissionRate: 15, discountRate: 0, walletNumber: "", whatsappPhone: "", maxDebt: 100, adminPass: DEFAULT_PASS };
+  let activeDriverPhone = "";
+  let isSubmitting = false;
+  let toastTimer = null;
+
+  function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.innerText = msg;
+    t.style.display = "block";
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.style.display = "none"; }, 3500);
+  }
+
+  function openTab(tab) {
+    ["reg", "portal", "admin"].forEach(k => {
+      document.getElementById("tab" + k[0].toUpperCase() + k.slice(1)).classList.toggle("active", k === tab);
+      document.getElementById("card" + k[0].toUpperCase() + k.slice(1)).classList.toggle("active", k === tab);
+    });
+    if (tab === "portal" && activeDriverPhone) {
+      renderDriverPortalByPhone(activeDriverPhone);
+    }
+    if (tab === "admin" && document.getElementById("adminPanelContent").style.display === "block") {
+      loadAdminData();
+    }
+  }
+
+  function switchAdminSub(sec) {
+    ["drivers", "trips", "settings"].forEach(s => {
+      document.getElementById("sub" + s[0].toUpperCase() + s.slice(1)).classList.toggle("active", s === sec);
+      document.getElementById("adminSec" + s[0].toUpperCase() + s.slice(1)).style.display = s === sec ? "block" : "none";
+    });
+    if (sec === "trips") loadAdminTrips();
+  }
+
+  function resetRegistrationForm() {
+    document.getElementById("regName").value = "";
+    document.getElementById("regPhone").value = "";
+    document.getElementById("regPin").value = "";
+    document.getElementById("regNationalId").value = "";
+    document.getElementById("regVehicle").value = "";
+    document.getElementById("manualLat").value = "";
+    document.getElementById("manualLng").value = "";
+    document.getElementById("photoInput").value = "";
+    document.getElementById("idCardInput").value = "";
+
+    const pImg = document.getElementById("photoPreview");
+    const iImg = document.getElementById("idCardPreview");
+    pImg.src = "";
+    pImg.style.display = "none";
+    iImg.src = "";
+    iImg.style.display = "none";
+
+    driverPhotoBase64 = "";
+    idCardBase64 = "";
+    currentGPS = null;
+    document.getElementById("gpsStatus").innerText = "غير محدد (يمكن المتابعة بدونه)";
+  }
+
+  function compressImage(file, maxWidth = 500, quality = 0.55) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(1, maxWidth / (img.width || maxWidth));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(img.width * scale));
+          canvas.height = Math.max(1, Math.round(img.height * scale));
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = () => reject(new Error("تعذر قراءة الصورة"));
+        img.src = ev.target.result;
+      };
+      reader.onerror = () => reject(new Error("تعذر فتح ملف الصورة"));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  document.getElementById("photoInput").addEventListener("change", async e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    try {
+      driverPhotoBase64 = await compressImage(f, 400, 0.55);
+      const img = document.getElementById("photoPreview");
+      img.src = driverPhotoBase64;
+      img.style.display = "block";
+      showToast("تم تجهيز صورة السائق");
+    } catch (err) {
+      showToast(err.message || "مشكلة في صورة السائق");
+    }
+  });
+
+  document.getElementById("idCardInput").addEventListener("change", async e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    try {
+      idCardBase64 = await compressImage(f, 600, 0.6);
+      const img = document.getElementById("idCardPreview");
+      img.src = idCardBase64;
+      img.style.display = "block";
+      showToast("تم تجهيز صورة البطاقة");
+    } catch (err) {
+      showToast(err.message || "مشكلة في صورة البطاقة");
+    }
+  });
+
+  function captureGPS() {
+    if (!navigator.geolocation) {
+      showToast("المتصفح لا يدعم GPS");
+      return;
+    }
+    document.getElementById("gpsStatus").innerText = "جاري تحديد الموقع...";
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        currentGPS = {
+          lat: Number(pos.coords.latitude.toFixed(6)),
+          lng: Number(pos.coords.longitude.toFixed(6)),
+          source: "gps",
+          updatedAt: new Date().toISOString()
+        };
+        document.getElementById("gpsStatus").innerText = `تم التحديد (${currentGPS.lat}, ${currentGPS.lng})`;
+        showToast("تم التقاط موقعك بنجاح");
+      },
+      () => {
+        document.getElementById("gpsStatus").innerText = "تعذر التقاط الموقع تلقائياً (يمكن المتابعة بدون موقع)";
+        showToast("تعذر تحديد الموقع تلقائياً");
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  function setManualGPS() {
+    const lat = parseFloat(document.getElementById("manualLat").value);
+    const lng = parseFloat(document.getElementById("manualLng").value);
+    if (isNaN(lat) || isNaN(lng)) {
+      showToast("أدخل خط العرض وخط الطول بشكل صحيح");
+      return;
+    }
+    currentGPS = {
+      lat: Number(lat.toFixed(6)),
+      lng: Number(lng.toFixed(6)),
+      source: "manual",
+      updatedAt: new Date().toISOString()
+    };
+    document.getElementById("gpsStatus").innerText = `تم التثبيت (${currentGPS.lat}, ${currentGPS.lng})`;
+    showToast("تم حفظ الموقع");
+  }
+
+  async function fetchConfig() {
+    try {
+      const res = await fetch(`${DB_URL}/config.json`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data) {
+        appConfig = {
+          commissionRate: Number(data.commissionRate ?? 15),
+          discountRate: Number(data.discountRate ?? 0),
+          walletNumber: data.walletNumber || "",
+          whatsappPhone: data.whatsappPhone || "",
+          maxDebt: Number(data.maxDebt ?? 100),
+          adminPass: data.adminPass || DEFAULT_PASS
+        };
+      }
+    } catch (_) {}
+    document.getElementById("cfgCommission").value = appConfig.commissionRate;
+    document.getElementById("cfgDiscount").value = appConfig.discountRate;
+    document.getElementById("cfgWallet").value = appConfig.walletNumber;
+    document.getElementById("cfgWhatsapp").value = appConfig.whatsappPhone;
+    document.getElementById("cfgMaxDebt").value = appConfig.maxDebt;
+  }
+
+  async function submitDriverReg() {
+    if (isSubmitting) return;
+
+    const name = document.getElementById("regName").value.trim();
+    const phone = document.getElementById("regPhone").value.trim();
+    const pin = document.getElementById("regPin").value.trim();
+    const nationalId = document.getElementById("regNationalId").value.trim();
+    const vehicle = document.getElementById("regVehicle").value.trim();
+    const cleanPhone = phone.replace(/\D/g, "");
+
+    if (!name || !cleanPhone || !pin || !nationalId || !vehicle) {
+      showToast("يرجى إكمال الاسم والرقم وكلمة السر والبطاقة والتوكتوك");
+      return;
+    }
+    if (!driverPhotoBase64 || !idCardBase64) {
+      showToast("إرفاق صورة السائق وصورة البطاقة مطلوب");
+      return;
+    }
+
+    const btn = document.getElementById("btnSubmitReg");
+    isSubmitting = true;
+    btn.disabled = true;
+    btn.innerText = "جاري إرسال الطلب...";
+
+    const driverData = {
+      name,
+      phone: cleanPhone,
+      pin,
+      nationalId,
+      vehicle,
+      photo: driverPhotoBase64,
+      idCard: idCardBase64,
+      location: currentGPS || null,
+      plateNumber: "",
+      status: "pending",
+      totalEarnings: 0,
+      dueCommission: 0,
+      tripsCount: 0,
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      const res = await fetch(`${DB_URL}/drivers/${cleanPhone}.json`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(driverData)
+      });
+
+      if (!res.ok) {
+        showToast("فشل الحفظ في قاعدة البيانات");
+        return;
+      }
+
+      resetRegistrationForm();
+      showToast("تم تسجيل طلبك! يمكنك الدخول لحسابك بالرقم وكلمة السر");
+      document.getElementById("loginPhone").value = cleanPhone;
+      document.getElementById("loginPin").value = "";
+      openTab("portal");
+    } catch (err) {
+      showToast("تعذر الاتصال بـ Firebase");
+    } finally {
+      isSubmitting = false;
+      btn.disabled = false;
+      btn.innerText = "إرسال طلب التسجيل للمراجعة";
+    }
+  }
+
+  function buildWhatsappTransferUrl(driver, dueAmount) {
+    const cleanWa = (appConfig.whatsappPhone || appConfig.walletNumber || "").replace(/\D/g, "");
+    const waTarget = cleanWa.startsWith("20") ? cleanWa : (cleanWa ? "20" + cleanWa : "");
+    const msg =
+      `مرحباً بإدارة تكتوكوبر،\n` +
+      `السائق: ${driver.name}\n` +
+      `رقم الهاتف: ${driver.phone}\n` +
+      `رقم التوكتوك: ${driver.plateNumber || "غير محدد"}\n` +
+      `قيمة العمولة المستحقة: ${Number(dueAmount || 0).toFixed(0)} ج\n` +
+      `رقم التحويل المعتمد: ${appConfig.walletNumber || "غير محدد"}\n` +
+      `سأرسل صورة إيصال التحويل الآن.`;
+
+    const encoded = encodeURIComponent(msg);
+    return waTarget ? `https://wa.me/${waTarget}?text=${encoded}` : `https://wa.me/?text=${encoded}`;
+  }
+
+  async function loadDriverPortal() {
+    await fetchConfig();
+    const phone = document.getElementById("loginPhone").value.trim().replace(/\D/g, "");
+    const pin = document.getElementById("loginPin").value.trim();
+
+    if (!phone || !pin) {
+      showToast("اكتب رقم الهاتف وكلمة السر");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${DB_URL}/drivers/${phone}.json`);
+      const d = await res.json();
+
+      if (!d) {
+        showToast("لا يوجد سائق مسجل بهذا الرقم");
+        return;
+      }
+      if (!d.pin || String(d.pin) !== pin) {
+        showToast("كلمة سر حساب السائق غير صحيحة");
+        return;
+      }
+
+      activeDriverPhone = phone;
+      document.getElementById("driverLoginBox").style.display = "none";
+      document.getElementById("btnLogoutDriver").style.display = "inline-block";
+      document.getElementById("loginPin").value = "";
+      renderDriverPortalByPhone(phone);
+    } catch (_) {
+      showToast("تعذر التحقق من الحساب");
+    }
+  }
+
+  function logoutDriver() {
+    activeDriverPhone = "";
+    document.getElementById("portalResult").innerHTML = "";
+    document.getElementById("driverLoginBox").style.display = "block";
+    document.getElementById("btnLogoutDriver").style.display = "none";
+    showToast("تم تسجيل الخروج من حساب السائق");
+  }
+
+  async function renderDriverPortalByPhone(phone) {
+    await fetchConfig();
+    const box = document.getElementById("portalResult");
+    box.innerHTML = "جاري تحميل بيانات الحساب...";
+
+    try {
+      const res = await fetch(`${DB_URL}/drivers/${phone}.json`);
+      const d = await res.json();
+      if (!d) {
+        logoutDriver();
+        return;
+      }
+
+      const statusLabel = d.status === "active"
+        ? `<span class="badge b-active">مفعّل وجاهز للعمل</span>`
+        : d.status === "blocked"
+        ? `<span class="badge b-blocked">موقوف (يلزم سداد النسبة أو مراجعة الإدارة)</span>`
+        : `<span class="badge b-pending">قيد مراجعة الإدارة</span>`;
+
+      const due = Number(d.dueCommission || 0);
+      const earnings = Number(d.totalEarnings || 0);
+      const avatarHtml = d.photo
+        ? `<img src="${d.photo}" class="driver-avatar" alt="صورة السائق" />`
+        : `<div class="driver-avatar" style="display:flex;align-items:center;justify-content:center;font-weight:bold;">🚖</div>`;
+
+      const waUrl = buildWhatsappTransferUrl(d, due);
+
+      box.innerHTML = `
+        <div class="driver-item">
+          <div class="portal-header" style="justify-content:space-between;">
+            <div class="portal-header">
+              ${avatarHtml}
+              <div>
+                <b style="font-size:16px;">${d.name}</b>
+                <div style="font-size:12px; color:#475569;">رقم الهاتف: <b>${d.phone}</b></div>
+                <div style="font-size:12px; color:#64748b;">التوكتوك: ${d.vehicle}</div>
+              </div>
+            </div>
+            <div>${statusLabel}</div>
+          </div>
+
+          <div style="margin-top:12px;">
+            رقم التوكتوك: ${d.plateNumber ? `<span class="plate">${d.plateNumber}</span>` : "<b>لم يُصدر بعد (بانتظار الموافقة)</b>"}
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat"><small>الرحلات</small><b>${d.tripsCount || 0}</b></div>
+            <div class="stat"><small>إجمالي الدخل</small><b>${earnings.toFixed(0)} ج</b></div>
+            <div class="stat"><small>نسبة التطبيق (${appConfig.commissionRate}%)</small><b style="color:#dc2626;">${due.toFixed(0)} ج</b></div>
+          </div>
+
+          <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:12px; font-size:13px;">
+            <div><b>توريد نسبة التطبيق:</b> المستحق <b>${due.toFixed(0)} ج</b> — رقم التحويل: <b>${appConfig.walletNumber || "لم يُحدد بعد"}</b></div>
+            <div style="color:#475569; margin-top:4px; font-size:12px;">
+              • للتحويل إلكترونياً: حوّل المبلغ ثم اضغط زر واتساب لإرسال صورة الإيصال مباشرة للإدارة.<br>
+              • للدفع النقدي (كاش): سلّم المبلغ للإدارة لتصفير المديونية من لوحة الإدارة.
+            </div>
+            <div style="margin-top:10px;">
+              <a class="btn btn-green" style="width:100%;" href="${waUrl}" target="_blank" rel="noopener">
+                إرسال تفاصيل التحويل وصورة الإيصال عبر واتساب
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+    } catch (_) {
+      box.innerHTML = `<p style="color:#dc2626;">حدث خطأ أثناء تحميل الحساب.</p>`;
+    }
+  }
+
+  async function unlockAdmin() {
+    await fetchConfig();
+    const pass = document.getElementById("adminPassInput").value.trim();
+    if (pass !== appConfig.adminPass) {
+      showToast("كلمة المرور غير صحيحة");
+      return;
+    }
+    document.getElementById("adminPassInput").value = "";
+    document.getElementById("adminLockBox").style.display = "none";
+    document.getElementById("adminPanelContent").style.display = "block";
+    document.getElementById("btnLogoutAdmin").style.display = "inline-block";
+    loadAdminData();
+  }
+
+  function logoutAdmin() {
+    document.getElementById("adminPanelContent").style.display = "none";
+    document.getElementById("btnLogoutAdmin").style.display = "none";
+    document.getElementById("adminLockBox").style.display = "block";
+    showToast("تم تسجيل الخروج من الإدارة");
+  }
+
+  async function saveAdminConfig() {
+    await fetchConfig();
+    const newPass = document.getElementById("cfgNewPass").value.trim();
+    const discVal = Math.min(90, Math.max(0, Number(document.getElementById("cfgDiscount").value) || 0));
+    const cfg = {
+      commissionRate: Number(document.getElementById("cfgCommission").value) || 15,
+      discountRate: discVal,
+      walletNumber: document.getElementById("cfgWallet").value.trim(),
+      whatsappPhone: document.getElementById("cfgWhatsapp").value.trim().replace(/\D/g, ""),
+      maxDebt: Number(document.getElementById("cfgMaxDebt").value) || 100,
+      adminPass: newPass || appConfig.adminPass
+    };
+    const res = await fetch(`${DB_URL}/config.json`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cfg)
+    });
+    if (res.ok) {
+      appConfig = cfg;
+      document.getElementById("cfgNewPass").value = "";
+      showToast(newPass ? "تم حفظ الإعدادات وتغيير كلمة المرور" : "تم حفظ الإعدادات");
+    } else {
+      showToast("تعذر حفظ الإعدادات");
+    }
+  }
+
+  async function loadAdminData() {
+    await fetchConfig();
+    const [drvRes, tripsRes] = await Promise.all([
+      fetch(`${DB_URL}/drivers.json`),
+      fetch(`${DB_URL}/trips.json`)
+    ]);
+    const data = await drvRes.json();
+    const tripsData = await tripsRes.json();
+
+    const tripsCount = tripsData ? Object.keys(tripsData).length : 0;
+    document.getElementById("tripsCountBadge").innerText = tripsCount;
+
+    const listEl = document.getElementById("driversList");
+    const entries = data ? Object.entries(data) : [];
+    document.getElementById("driversCount").innerText = entries.length;
+
+    if (!entries.length) {
+      listEl.innerHTML = `<p style="color:#64748b;">لا يوجد سائقون مسجلون حتى الآن.</p>`;
+      return;
+    }
+
+    listEl.innerHTML = entries.map(([phone, d]) => {
+      const badge = d.status === "active"
+        ? `<span class="badge b-active">مفعّل</span>`
+        : d.status === "blocked"
+        ? `<span class="badge b-blocked">موقوف</span>`
+        : `<span class="badge b-pending">قيد المراجعة</span>`;
+
+      const locText = d.location ? `${d.location.lat}, ${d.location.lng}` : "غير محدد";
+      const due = Number(d.dueCommission || 0);
+
+      return `
+        <div class="driver-item">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div>
+              <b>${d.name}</b> — <span>${d.phone}</span> | بطاقة: <b>${d.nationalId || "-"}</b>
+              <div style="font-size:12px; color:#475569;">التوكتوك: ${d.vehicle} | الموقع: ${locText} | نسبة مستحقة: <b style="color:#dc2626;">${due.toFixed(0)} ج</b></div>
+            </div>
+            <div>
+              ${d.plateNumber ? `<span class="plate">${d.plateNumber}</span>` : ""}
+              ${badge}
+            </div>
+          </div>
+
+          <div class="preview-row">
+            <div class="preview-box">
+              <small><b>صورة السائق</b></small>
+              ${d.photo ? `<img src="${d.photo}" style="display:block;" alt="سائق" />` : "<p>لا توجد</p>"}
+            </div>
+            <div class="preview-box">
+              <small><b>صورة البطاقة</b></small>
+              ${d.idCard ? `<img src="${d.idCard}" style="display:block;" alt="بطاقة" />` : "<p>لا توجد</p>"}
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+            <button type="button" class="btn btn-green" onclick="approveDriver('${phone}', '${d.plateNumber || ""}')">
+              ${d.plateNumber ? "تفعيل الحساب" : "قبول وإصدار نمرة توكتوك"}
+            </button>
+            <button type="button" class="btn btn-amber" onclick="toggleEditBox('${phone}')">تعديل البيانات</button>
+            <button type="button" class="btn btn-red" onclick="setDriverStatus('${phone}', 'blocked')">إيقاف</button>
+            <button type="button" class="btn btn-blue" onclick="settleCommission('${phone}')">تصفير النسبة (تم السداد)</button>
+            <button type="button" class="btn btn-gray" onclick="deleteDriver('${phone}')">حذف</button>
+          </div>
+
+          <div class="edit-box" id="editBox_${phone}">
+            <div class="grid">
+              <div>
+                <label>الاسم</label>
+                <input type="text" id="editName_${phone}" value="${d.name || ""}" />
+              </div>
+              <div>
+                <label>البطاقة</label>
+                <input type="text" id="editId_${phone}" value="${d.nationalId || ""}" />
+              </div>
+              <div>
+                <label>التوكتوك</label>
+                <input type="text" id="editVeh_${phone}" value="${d.vehicle || ""}" />
+              </div>
+              <div>
+                <label>رقم النمرة</label>
+                <input type="text" id="editPlate_${phone}" value="${d.plateNumber || ""}" placeholder="مثال: TT-101" />
+              </div>
+              <div>
+                <label>كلمة سر السائق</label>
+                <input type="text" id="editPin_${phone}" value="${d.pin || ""}" placeholder="كلمة سر السائق" />
+              </div>
+            </div>
+            <div style="margin-top:10px; display:flex; gap:8px;">
+              <button type="button" class="btn btn-green" onclick="saveDriverEdit('${phone}')">حفظ التعديلات</button>
+              <button type="button" class="btn btn-gray" onclick="toggleEditBox('${phone}')">إلغاء</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  async function loadAdminTrips() {
+    const listEl = document.getElementById("adminTripsList");
+    listEl.innerHTML = "جاري تحميل الأوردرات...";
+    try {
+      const res = await fetch(`${DB_URL}/trips.json`);
+      const data = await res.json();
+      const entries = data ? Object.entries(data).reverse() : [];
+
+      let totalFares = 0;
+      let totalComm = 0;
+      entries.forEach(([, t]) => {
+        totalFares += Number(t.fare || 0);
+        totalComm += Number(t.commissionAmount || 0);
+      });
+
+      document.getElementById("sumAllTrips").innerText = entries.length;
+      document.getElementById("tripsCountBadge").innerText = entries.length;
+      document.getElementById("sumAllFares").innerText = `${totalFares.toFixed(0)} ج`;
+      document.getElementById("sumAllComm").innerText = `${totalComm.toFixed(0)} ج`;
+
+      if (!entries.length) {
+        listEl.innerHTML = `<p style="color:#64748b;">لا توجد أوردرات أو رحلات مسجلة حتى الآن.</p>`;
+        return;
+      }
+
+      listEl.innerHTML = entries.map(([id, t]) => `
+        <div class="trip-box">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div>
+              <b>${t.tripCode || ("#" + id.slice(-5))}</b> — الحالة: <b>${t.status || "جديد"}</b>
+              <div style="font-size:12px; color:#64748b;">الراكب: ${t.riderName || "-"}</div>
+            </div>
+            <div style="text-align:left;">
+              <div>الأجرة: <b>${Number(t.fare || 0).toFixed(0)} ج</b></div>
+              <div style="font-size:12px; color:#16a34a;">العمولة: <b>${Number(t.commissionAmount || 0).toFixed(0)} ج</b></div>
+            </div>
+          </div>
+          <div style="margin-top:8px; font-size:13px;">
+            <b>من:</b> ${t.pickup || "-"} ⬅ <b>إلى:</b> ${t.dropoff || "-"}
+          </div>
+          <div style="margin-top:6px; font-size:12px; color:#475569;">
+            السائق: ${t.driverName ? `<b>${t.driverName}</b> (${t.driverPlate || ""})` : "لم يُقبل بعد"}
+          </div>
+        </div>
+      `).join("");
+    } catch (_) {
+      listEl.innerHTML = `<p style="color:#dc2626;">تعذر تحميل الأوردرات.</p>`;
+    }
+  }
+
+  function toggleEditBox(phone) {
+    const box = document.getElementById(`editBox_${phone}`);
+    if (!box) return;
+    box.style.display = box.style.display === "block" ? "none" : "block";
+  }
+
+  async function saveDriverEdit(phone) {
+    const name = document.getElementById(`editName_${phone}`).value.trim();
+    const nationalId = document.getElementById(`editId_${phone}`).value.trim();
+    const vehicle = document.getElementById(`editVeh_${phone}`).value.trim();
+    const plateNumber = document.getElementById(`editPlate_${phone}`).value.trim();
+    const pin = document.getElementById(`editPin_${phone}`).value.trim();
+
+    if (!name || !nationalId || !vehicle) {
+      showToast("الاسم والبطاقة والتوكتوك مطلوبون");
+      return;
+    }
+
+    const payload = { name, nationalId, vehicle, plateNumber };
+    if (pin) payload.pin = pin;
+
+    await fetch(`${DB_URL}/drivers/${phone}.json`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    showToast("تم حفظ تعديلات السائق");
+    loadAdminData();
+  }
+
+  async function deleteDriver(phone) {
+    if (!confirm("هل أنت متأكد من حذف هذا السائق نهائياً من قاعدة البيانات؟")) return;
+    await fetch(`${DB_URL}/drivers/${phone}.json`, { method: "DELETE" });
+    showToast("تم حذف السائق");
+    loadAdminData();
+  }
+
+  async function approveDriver(phone, existingPlate) {
+    let plate = existingPlate;
+    if (!plate) {
+      const randomNum = Math.floor(100 + Math.random() * 899);
+      plate = `TT-${randomNum}`;
+    }
+    await fetch(`${DB_URL}/drivers/${phone}.json`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "active", plateNumber: plate })
+    });
+    showToast(`تم تفعيل السائق وإصدار رقم ${plate}`);
+    loadAdminData();
+  }
+
+  async function setDriverStatus(phone, status) {
+    await fetch(`${DB_URL}/drivers/${phone}/status.json`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(status)
+    });
+    showToast("تم تحديث حالة السائق");
+    loadAdminData();
+  }
+
+  async function settleCommission(phone) {
+    await fetch(`${DB_URL}/drivers/${phone}.json`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dueCommission: 0, status: "active" })
+    });
+    showToast("تم تصفير المديونية وتفعيل السائق");
+    loadAdminData();
+  }
+
+  fetchConfig();
+</script>
+</body>
+</html>
